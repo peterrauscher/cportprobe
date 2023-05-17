@@ -1,6 +1,9 @@
-#include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+#include <iostream>
+#include <boost/asio.hpp>
+
+boost::asio::io_context ioContext;
+boost::asio::ip::tcp::socket ioSocket(ioContext);
 
 void usage(FILE *fp, const char *path)
 {
@@ -15,6 +18,28 @@ void usage(FILE *fp, const char *path)
               "List of ports to scan (comma-separated).\n");
 }
 
+bool test_port_open(const std::string &hostaddr, unsigned short portnum)
+{
+  boost::asio::ip::tcp::endpoint _endpoint(boost::asio::ip::address::from_string(hostaddr), portnum);
+
+  boost::system::error_code errorCode;
+  ioSocket.connect(_endpoint, errorCode);
+
+  return !errorCode;
+}
+
 int main(int argc, char *argv[])
 {
+  std::string hostaddr = "0.0.0.0";
+  unsigned short port = 39577;
+
+  if (test_port_open(hostaddr, port))
+  {
+    std::cout << "Port " << port << " is open" << std::endl;
+  }
+  else
+  {
+    std::cout << "Port " << port << " is closed" << std::endl;
+  }
+  return 0;
 }
